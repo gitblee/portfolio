@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이성경 | AI FDE 이력서 × KRAFTON</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@300;400;700&display=swap');
+
+:root {
+  --black:#08080f; --dark:#10101e; --panel:#16162a; --border:#26264a;
+  --gold:#f5c842; --gold2:#e8a020; --teal:#00d4aa; --pink:#ff6b9d;
+  --blue:#4fc3f7; --purple:#a855f7; --green:#4ade80; --white:#e8e8f2; --gray:#60608a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--white);font-family:'Noto Sans KR',sans-serif;overflow:hidden;width:100vw;height:100vh;}
+#gameCanvas{display:block;image-rendering:pixelated;}
+
+/* screens */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;transition:opacity .35s;}
+.screen.hidden{opacity:0;pointer-events:none;}
+
+/* stars */
+.stars-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--dur) infinite var(--delay);}
+@keyframes twinkle{0%,100%{opacity:.12}50%{opacity:.9}}
+
+/* TITLE */
+#titleScreen{flex-direction:column;background:linear-gradient(160deg,#04040e 0%,#0e0620 55%,#04040e 100%);}
+.title-wrap{position:relative;z-index:2;text-align:center;padding:26px 34px 22px;border:2px solid rgba(245,200,66,.35);background:rgba(8,6,18,.78);max-width:500px;width:90vw;}
+.t-logo{font-family:'Press Start 2P',monospace;font-size:clamp(13px,2.2vw,20px);color:var(--white);letter-spacing:6px;margin-bottom:4px;}
+.t-dept{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1vw,9px);color:var(--teal);margin-bottom:16px;text-shadow:0 0 12px rgba(0,212,170,.5);}
+.t-main{font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.7vw,15px);color:var(--gold);line-height:2.2;text-shadow:3px 3px 0 var(--gold2),0 0 22px rgba(245,200,66,.3);margin-bottom:5px;}
+.t-sub{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1vw,9px);color:#888;margin-bottom:18px;}
+.blink{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1vw,9px);color:var(--white);animation:blink 1.2s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* INFO PANEL */
+#infoPanel{flex-direction:column;align-items:stretch;justify-content:center;padding:14px;background:rgba(5,5,14,.97);}
+.panel-wrap{width:min(720px,94vw);max-height:90vh;overflow-y:auto;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--gold) var(--panel);}
+.panel-wrap::-webkit-scrollbar{width:5px;}
+.panel-wrap::-webkit-scrollbar-thumb{background:var(--gold);}
+.p-header{display:flex;align-items:center;gap:12px;padding:13px 18px 11px;border-bottom:2px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:5;}
+.p-icon{font-size:22px;} 
+.p-title{font-family:'Press Start 2P',monospace;font-size:clamp(8px,1.3vw,12px);color:var(--gold);}
+.p-num{font-family:'Press Start 2P',monospace;font-size:clamp(6px,.9vw,8px);color:var(--gray);margin-left:auto;}
+.p-body{padding:16px 18px;display:flex;flex-direction:column;gap:13px;background:var(--black);}
+.p-hint{font-family:'Press Start 2P',monospace;font-size:clamp(6px,.9vw,8px);color:var(--gray);text-align:center;padding:12px;animation:blink 1.5s step-end infinite;border-top:1px solid var(--border);background:var(--black);}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--gold);padding:13px 15px;animation:slideIn .28s ease both;}
+.card:nth-child(1){animation-delay:.04s}.card:nth-child(2){animation-delay:.09s}.card:nth-child(3){animation-delay:.14s}
+.card:nth-child(4){animation-delay:.19s}.card:nth-child(5){animation-delay:.24s}.card:nth-child(6){animation-delay:.29s}
+.card:nth-child(7){animation-delay:.34s}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.c-title{font-weight:700;font-size:clamp(12px,1.5vw,14px);color:var(--white);margin-bottom:3px;}
+.c-sub{font-size:clamp(10px,1.2vw,12px);color:var(--teal);margin-bottom:5px;}
+.c-date{font-family:'Press Start 2P',monospace;font-size:clamp(5px,.85vw,8px);color:var(--gray);margin-bottom:8px;}
+.c-desc{font-size:clamp(10px,1.2vw,12px);color:#9090b0;line-height:1.8;}
+.c-desc li{margin-left:14px;margin-bottom:2px;}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tag{font-size:clamp(8px,1vw,10px);padding:2px 7px;font-weight:600;}
+.tag-ai{background:rgba(0,212,170,.1);color:var(--teal);border:1px solid var(--teal);}
+.tag-dev{background:rgba(79,195,247,.1);color:var(--blue);border:1px solid var(--blue);}
+.tag-pm{background:rgba(255,107,157,.1);color:var(--pink);border:1px solid var(--pink);}
+.tag-data{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid var(--purple);}
+.tag-cert{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid var(--gold);}
+.tag-kw{background:rgba(74,222,128,.1);color:var(--green);border:1px solid var(--green);}
+.hl{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.28);padding:7px 11px;margin-top:7px;font-size:clamp(9px,1.1vw,11px);color:var(--gold);}
+
+/* POPUP */
+#popup{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:300;background:rgba(0,0,0,.85);transition:opacity .3s;}
+#popup.hidden{opacity:0;pointer-events:none;}
+.popup-box{border:2px solid var(--pink);background:var(--panel);padding:28px 32px;max-width:440px;width:88vw;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes popIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.popup-icon{font-size:36px;margin-bottom:10px;}
+.popup-title{font-family:'Press Start 2P',monospace;font-size:clamp(8px,1.4vw,12px);color:var(--pink);line-height:2;margin-bottom:16px;text-shadow:0 0 12px rgba(255,107,157,.4);}
+.popup-btn{font-family:'Press Start 2P',monospace;font-size:clamp(7px,1vw,10px);color:var(--black);background:var(--pink);border:none;padding:10px 20px;cursor:pointer;margin-top:4px;animation:blink 1.5s step-end infinite;}
+.popup-btn:hover{background:var(--gold);color:var(--black);}
+
+/* AI BONUS PANEL */
+#aiPanel{flex-direction:column;align-items:stretch;justify-content:center;padding:14px;background:rgba(5,5,14,.98);}
+.ai-header{display:flex;align-items:center;gap:12px;padding:13px 18px 11px;border-bottom:2px solid var(--pink);background:#1a0a1a;position:sticky;top:0;z-index:5;}
+.ai-header-title{font-family:'Press Start 2P',monospace;font-size:clamp(8px,1.3vw,11px);color:var(--pink);}
+
+/* typewriter finale box */
+.type-box{background:rgba(0,212,170,.06);border:2px solid rgba(0,212,170,.4);padding:14px 18px;margin-top:4px;}
+.type-text{font-size:clamp(11px,1.4vw,13px);color:var(--teal);font-weight:700;line-height:1.9;min-height:60px;}
+
+/* about me */
+.about-hero{background:linear-gradient(135deg,rgba(245,200,66,.08),rgba(0,212,170,.06));border:1px solid rgba(245,200,66,.3);padding:18px;text-align:center;animation:slideIn .28s ease both;}
+.about-name{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.5vw,13px);color:var(--gold);margin-bottom:5px;}
+.about-role{font-size:clamp(11px,1.3vw,13px);color:var(--teal);margin-bottom:12px;font-weight:700;}
+.about-quote{font-size:clamp(11px,1.3vw,13px);color:var(--white);line-height:1.9;border-left:3px solid var(--gold);padding-left:12px;text-align:left;margin-bottom:12px;}
+.kw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px;}
+.kw-item{background:rgba(0,212,170,.08);border:1px solid rgba(0,212,170,.25);padding:8px 10px;text-align:center;font-size:clamp(10px,1.2vw,12px);color:var(--teal);animation:slideIn .28s ease both;}
+.kw-item span{display:block;font-size:clamp(8px,1vw,10px);color:var(--gray);margin-top:2px;}
+
+/* progress */
+.prog-wrap{position:fixed;bottom:0;left:0;right:0;height:3px;background:var(--border);z-index:200;}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .5s ease;}
+</style>
+</head>
+<body>
+
+<div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+<canvas id="gameCanvas"></canvas>
+
+<!-- TITLE -->
+<div class="screen" id="titleScreen">
+  <div class="stars-bg" id="starsA"></div>
+  <div class="title-wrap">
+    <div class="t-logo">✦ KRAFTON ✦</div>
+    <div class="t-dept">AI TRANSFORMATION DEPT.</div>
+    <svg viewBox="0 0 18 22" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:8px auto 12px;width:68px;height:83px;image-rendering:pixelated">
+      <rect x="4" y="0" width="10" height="2" fill="#3d2b1f"/><rect x="3" y="1" width="12" height="3" fill="#5c3d2e"/>
+      <rect x="2" y="2" width="14" height="2" fill="#3d2b1f"/><rect x="3" y="3" width="12" height="8" fill="#f5c5a3"/>
+      <rect x="4" y="8" width="2" height="1" fill="#ffaaaa"/><rect x="12" y="8" width="2" height="1" fill="#ffaaaa"/>
+      <rect x="5" y="5" width="3" height="3" fill="#2c2c3e"/><rect x="10" y="5" width="3" height="3" fill="#2c2c3e"/>
+      <rect x="5" y="5" width="1" height="1" fill="white"/><rect x="10" y="5" width="1" height="1" fill="white"/>
+      <rect x="7" y="9" width="4" height="1" fill="#e08888"/><rect x="6" y="10" width="1" height="1" fill="#e08888"/>
+      <rect x="11" y="10" width="1" height="1" fill="#e08888"/><rect x="3" y="3" width="3" height="2" fill="#5c3d2e"/>
+      <rect x="12" y="3" width="3" height="2" fill="#5c3d2e"/><rect x="7" y="11" width="4" height="2" fill="#f5c5a3"/>
+      <rect x="4" y="13" width="10" height="6" fill="#4fc3f7"/><rect x="7" y="13" width="4" height="1" fill="#fff"/>
+      <rect x="2" y="13" width="2" height="5" fill="#4fc3f7"/><rect x="14" y="13" width="2" height="5" fill="#4fc3f7"/>
+      <rect x="1" y="17" width="3" height="2" fill="#f5c5a3"/><rect x="14" y="17" width="3" height="2" fill="#f5c5a3"/>
+      <rect x="5" y="19" width="3" height="3" fill="#2a2a50"/><rect x="10" y="19" width="3" height="3" fill="#2a2a50"/>
+      <rect x="4" y="21" width="4" height="1" fill="#f5c842"/><rect x="10" y="21" width="4" height="1" fill="#f5c842"/>
+    </svg>
+    <div class="t-main">이성경의<br>KRAFTON QUEST</div>
+    <div class="t-sub">AI FDE 채용 이력서 · 6 STAGES</div>
+    <div class="blink">▶ ENTER / SPACE / CLICK 으로 시작 ◀</div>
+  </div>
+</div>
+
+<!-- INFO PANEL -->
+<div class="screen hidden" id="infoPanel">
+  <div class="panel-wrap" id="panelWrap">
+    <div class="p-header">
+      <span class="p-icon" id="pIcon">📋</span>
+      <span class="p-title" id="pTitle">STAGE</span>
+      <span class="p-num" id="pNum">1 / 6</span>
+    </div>
+    <div class="p-body" id="pBody"></div>
+    <div class="p-hint">▶ ENTER / SPACE / CLICK 으로 계속</div>
+  </div>
+</div>
+
+<!-- AI BONUS POPUP -->
+<div id="popup" class="hidden">
+  <div class="popup-box">
+    <div class="popup-icon">⚡</div>
+    <div class="popup-title">추가 퀘스트 발생!<br>그녀의 AI 경험을<br>더 알아보자!</div>
+    <button class="popup-btn" id="popupBtn">▶ ENTER / CLICK</button>
+  </div>
+</div>
+
+<!-- AI BONUS PANEL -->
+<div class="screen hidden" id="aiPanel">
+  <div class="panel-wrap" id="aiPanelWrap">
+    <div class="ai-header">
+      <span class="p-icon">🤖</span>
+      <span class="ai-header-title">⚡ BONUS STAGE — AI 실전 경험</span>
+      <span class="p-num" style="color:var(--pink)">EXTRA</span>
+    </div>
+    <div class="p-body" id="aiBody"></div>
+    <div class="p-hint" style="border-top-color:var(--pink)">▶ ENTER / SPACE / CLICK 으로 계속</div>
+  </div>
+</div>
+
+<!-- END -->
+<div class="screen hidden" id="endScreen">
+  <div class="stars-bg" id="starsB"></div>
+  <div style="position:relative;z-index:2;text-align:center;padding:28px 36px;border:2px solid var(--gold);background:rgba(6,6,18,.95);max-width:560px;width:90vw;animation:slideIn .5s ease">
+    <div style="font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.7vw,15px);color:var(--gold);line-height:2.2;margin-bottom:16px;text-shadow:0 0 18px rgba(245,200,66,.45)">🏆 QUEST COMPLETE!</div>
+    <div style="font-size:clamp(12px,1.4vw,14px);color:var(--white);line-height:2;margin-bottom:16px">크래프톤의 AI FDE로서<br>현업 조직과 함께<br>AI 자동화를 실현하고 싶습니다.</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:clamp(5px,.9vw,8px);color:var(--teal);line-height:2.8">
+      📧 biblee2222@gmail.com<br>📞 010-7304-0779<br>🎓 충남대 식품영양학과 · GPA 3.99 / 4.50<br>🌐 TOEIC 890 · OPIc IH
+    </div>
+    <div class="blink" style="margin-top:16px;color:var(--gold)">✦ 함께 레벨업 합시다 ✦</div>
+  </div>
+</div>
+
+<script>
+// ── stars ──
+function makeStars(id){
+  const c=document.getElementById(id);
+  for(let i=0;i<90;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.3+.4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*3}s;--delay:${Math.random()*4}s`;
+    c.appendChild(s);
+  }
+}
+makeStars('starsA');makeStars('starsB');
+
+// ── canvas ──
+const cv=document.getElementById('gameCanvas'),ctx=cv.getContext('2d');
+function resize(){cv.width=innerWidth;cv.height=innerHeight;}
+resize();window.addEventListener('resize',resize);
+
+// ── stage HTML ──
+const S1_HTML=`
+<div class="card" style="border-left-color:#4fc3f7">
+  <div class="c-title">충남대학교 식품영양학과</div>
+  <div class="c-sub">충남대학교 · 대전</div>
+  <div class="c-date">2017.03 → 2021.02</div>
+  <div class="c-desc"><ul>
+    <li>GPA 3.99 / 4.50 &nbsp;(전공 평점 3.946 · 전공 92학점 · 총 133학점)</li>
+    <li>데이터 분석·AI 융합에 관심 갖고 Python·머신러닝·빅데이터 자율 학습</li>
+    <li>학점은행제 통해 경영학·세무학·회계 추가 이수</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-cert">GPA 3.99</span><span class="tag tag-ai">AI 자기학습</span><span class="tag tag-data">데이터분석</span></div>
+</div>
+<div class="card" style="border-left-color:#a855f7">
+  <div class="c-title">POSCO 청년 AI·BigData 아카데미 17기</div>
+  <div class="c-sub">포스코 × 포항공과대학교</div>
+  <div class="c-date">2022.01 → 2022.04 &nbsp;(500h)</div>
+  <div class="c-desc"><ul>
+    <li>Python · 머신러닝 · 딥러닝 · 컴퓨터비전(YOLOv5) · AIoT · 빅데이터 분석 기초</li>
+    <li>6주 팀 프로젝트: AI 프로젝트 + BigData 분석 프로젝트 동시 수행</li>
+    <li>카드사 실적 데이터 분석 → 카드 혜택 연계 마케팅 방안 도출</li>
+    <li>시각장애인용 구도 추천 카메라 앱 개발 (YOLOv5 Object Detection + 음성 안내)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-ai">YOLOv5</span><span class="tag tag-dev">Python</span><span class="tag tag-data">BigData</span><span class="tag tag-dev">앱개발</span></div>
+</div>
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">POSCO 취업아카데미 22-13차</div>
+  <div class="c-sub">포스코 인재창조원</div>
+  <div class="c-date">2022.10.17 → 2022.11.04 &nbsp;(120h)</div>
+  <div class="c-desc"><ul>
+    <li>기업 문화 교육 및 실제 기업 프로젝트 방안을 착안한 과제 수행·발표</li>
+    <li>비즈니스 현황 분석 · 현장 조사 · 쉐도잉 · 페르소나 설정 · 시뮬레이션 · 친화도 분석 · 앱 프로토타입 제작 · 고객 테스트</li>
+    <li>→ 인천 송도 센트럴파크 유모차 대여 플랫폼 기획 → 창의상 수상</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">UX리서치</span><span class="tag tag-pm">서비스기획</span><span class="tag tag-cert">창의상</span></div>
+</div>
+<div class="card" style="border-left-color:#ff6b9d">
+  <div class="c-title">42서울 라피신</div>
+  <div class="c-sub">과학기술정보통신부</div>
+  <div class="c-date">2022.08.22 → 2022.09.16 &nbsp;(160h)</div>
+  <div class="c-desc"><ul>
+    <li>Shell · C언어 및 Computational Thinking 학습</li>
+    <li>교재·교수 없이 동료 학습(Peer Learning) 방식으로 진행</li>
+    <li>의사소통 능력 및 자기주도 학습 역량 향상</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-dev">C언어</span><span class="tag tag-dev">Shell</span><span class="tag tag-kw">동료학습</span></div>
+</div>
+<div class="card" style="border-left-color:#00d4aa">
+  <div class="c-title">시큐리티 아카데미 직무트랙</div>
+  <div class="c-sub">한국정보보호산업협회</div>
+  <div class="c-date">2023.07.04 → 2023.08.04 &nbsp;(160h)</div>
+  <div class="c-desc"><ul>
+    <li>주요정보통신기반시설 · 네트워크 구조 및 보안 · 침해사고 대응 이론 학습</li>
+    <li>보안 컨설턴트 · 보안 관제 · 악성코드 분석 직무 이해</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-dev">IT보안</span><span class="tag tag-dev">네트워크</span></div>
+</div>`;
+
+const S2_HTML=`
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">브레인즈컴퍼니㈜ — AI 기획 · 영업</div>
+  <div class="c-sub">현재 재직 중 · IT 인프라 모니터링 솔루션 (Zenius-AI)</div>
+  <div class="c-date">2025.05.19 → 현재</div>
+  <div class="c-desc"><ul>
+    <li>IT 인프라 모니터링 사업 <strong style="color:var(--white)">제안서 51건+</strong> 작성 (풀제안 10건 → 9건 수주, 파트제안 41건)</li>
+    <li>영업 자료(경쟁사 비교·도입 필요성·버전 업그레이드 등) 49건, 내부 자료(소개자료·카탈로그·브로셔) 57건 제작</li>
+    <li>외부 미팅(고객사·전시회 제품 소개 및 데모) 16건, 규격 검토 13건, 조달청 나라장터 등록 8건</li>
+    <li>Zenius-AI v2.0 영문 자료 작성, Sakestoolkit 현행화 신규 자료 작성</li>
+    <li>국내외 경쟁사 규격 취합 및 동향 조사, 전시회·웨비나 지원</li>
+    <li>LLM AI 활용 블로그 작성·월간동향 조사 업무 자동화</li>
+    <li>서비스 문의 LLM 자동화 챗봇 제작을 위한 <strong style="color:var(--white)">프롬프트 엔지니어링 PM</strong> 담당</li>
+  </ul></div>
+  <div class="hl">🎯 AI 자동화 실무 구현 — 답변 정확도 61% → 93% (+32%p) 달성</div>
+  <div class="tags"><span class="tag tag-ai">LLM 자동화</span><span class="tag tag-pm">PM</span><span class="tag tag-ai">프롬프트엔지니어링</span><span class="tag tag-cert">제안 수주율 90%</span></div>
+</div>
+<div class="card" style="border-left-color:#00d4aa">
+  <div class="c-title">마음에이아이㈜ — AI 기획 · 프롬프트 엔지니어</div>
+  <div class="c-sub">글로벌플랫폼본부 · 매니저</div>
+  <div class="c-date">2024.05.13 → 2024.08.12 &nbsp;(4개월)</div>
+  <div class="c-desc"><ul>
+    <li>사내 LLM 모델 성능 실험·평가 및 개선 방향 제안</li>
+    <li>사내 신규 사업 분야 테스트 및 개선 방향 기획·제안 (화면설계서, Figma 툴 활용)</li>
+    <li>20가지 업무 태스크 영/한 프롬프트 작성 (영상 스크립트·데이터 마스킹·이메일 등)</li>
+    <li>'AI 바리스타' — 카페 직원 페르소나 기반 메뉴 주문·안내 챗봇 설계 (경쟁사 분석·고객 시나리오·painpoint 분석·프롬프트 엔지니어링·테스트·화면설계서 전 과정)</li>
+    <li>'AI Chatplay' — 비전문가도 맞춤형 챗봇 설계 가능하도록 프롬프트 기획·작성</li>
+    <li>해외 첫 프로젝트 'chouchoubebe 예약 AI 챗봇' — Sub PM + 프롬프트 엔지니어 (사업 기획·고객 미팅·UI/UX 디자인·프롬프트 엔지니어링·검수 전 과정 관여)</li>
+  </ul></div>
+  <div class="hl">🌏 해외 프로젝트 Sub PM — 2차 계약 연장 성공</div>
+  <div class="tags"><span class="tag tag-ai">Prompt Eng.</span><span class="tag tag-pm">Sub PM</span><span class="tag tag-pm">Figma UI/UX</span><span class="tag tag-ai">챗봇설계</span></div>
+</div>
+<div class="card" style="border-left-color:#4fc3f7">
+  <div class="c-title">한국정보보호산업협회 — 교육운영 · 기획</div>
+  <div class="c-sub">한국정보보호교육원 · 주임</div>
+  <div class="c-date">2023.08.07 → 2023.12.31 &nbsp;(5개월)</div>
+  <div class="c-desc"><ul>
+    <li>'시큐리티 아카데미 직무트랙/기업트랙' · '서울형 뉴딜 일자리 지원 사업' · '기업멤버십 SW캠프' 교육 운영 및 지원</li>
+    <li>사이버 보안 인재 10만 양성 목표를 위한 '시큐리티 아카데미' 사업 계획서 작성 참여</li>
+    <li>'2023 사이버보안 인재양성 성과보고회' · '시큐리티 아카데미 성과공유회' · '기업멤버십 SW캠프 성과공유회' 행사 3건 기획·운영</li>
+    <li>교육 홍보용 '성과확산 공모전' 단독 기획, SNS 홍보물·리플렛·포스터 제작</li>
+    <li>교육생 모집·채용 연계 지원</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">행사기획</span><span class="tag tag-pm">교육운영</span><span class="tag tag-pm">SNS홍보</span></div>
+</div>`;
+
+const AI_BONUS_HTML=`
+<div class="card" style="border-left-color:#ff6b9d">
+  <div class="c-title" style="color:var(--pink)">🔥 브레인즈컴퍼니 — AI 자동화 실전 기록</div>
+  <div class="c-sub">현재 재직 중 · 2025.05 →</div>
+  <div class="c-desc"><ul>
+    <li><strong style="color:var(--white)">블로그 GPT-s 자동화</strong> — LLM 활용 블로그 작성 프롬프트를 GPT-s로 제작·사내 공유 → 월 1회 → 월 6회 발행으로 6배 향상</li>
+    <li><strong style="color:var(--white)">AI 월간 동향 분석기</strong> — LLM 활용 검색 구문 제작 + 기사 자동 요약 + 지정 형식 자동 변환 기능 구현 (수작업 대비 시간 80%↓)</li>
+    <li><strong style="color:var(--white)">Claude로 PPT 제작</strong> — Anthropic Claude를 활용한 제안서·발표자료 초안 자동 생성 워크플로우 구축</li>
+    <li><strong style="color:var(--white)">서비스 내 대화형 AI Agent</strong> — 성능·이벤트 분석용 CRM형 AI Agent 탑재 의견 제시 및 프롬프트 엔지니어링 PM 담당 → 답변 정확도 61% → 93% (+32%p), 고객사 AI 요구 선제 대응 가능</li>
+    <li><strong style="color:var(--white)">서비스 문의 LLM 챗봇</strong> — 고객 서비스 문의 자동 응답 챗봇 프롬프트 설계·PM 진행</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-ai">GPT-s</span><span class="tag tag-ai">Claude</span><span class="tag tag-ai">AI Agent</span><span class="tag tag-pm">PM</span><span class="tag tag-cert">정확도 +32%p</span></div>
+</div>
+<div class="card" style="border-left-color:#a855f7">
+  <div class="c-title" style="color:var(--purple)">🤖 마음에이아이 — 프롬프트 엔지니어 전담 업무</div>
+  <div class="c-sub">직무 자체가 프롬프트 엔지니어 · 2024.05 → 2024.08</div>
+  <div class="c-desc"><ul>
+    <li><strong style="color:var(--white)">LLM 모델 성능 평가</strong> — 사내 LLM 모델 다각도 실험 평가 및 개선 방향 기획·제안 (화면설계서·Figma 활용)</li>
+    <li><strong style="color:var(--white)">20가지 업무 태스크 프롬프트</strong> — 영상 스크립트·데이터 마스킹·이메일 작성 등 실무 자동화용 영문·한글 프롬프트 전체 설계</li>
+    <li><strong style="color:var(--white)">AI 바리스타</strong> — 카페 직원 페르소나 LLM 챗봇 (경쟁사 분석 → 고객 시나리오 → painpoint 분석 → 프롬프트 엔지니어링 → 테스트 → 화면설계서 제작 전 과정)</li>
+    <li><strong style="color:var(--white)">AI Chatplay</strong> — 프롬프트 비전문가도 맞춤형 챗봇 설계 가능한 플랫폼 내 프롬프트 전체 기획·작성</li>
+    <li><strong style="color:var(--white)">chouchoubebe 해외 예약 챗봇</strong> — 호주 키즈카페 프랜차이즈 본사 AI 예약 시스템 (Sub PM + 프롬프트 엔지니어 · 사업 기획 → 고객 미팅 → UI/UX 디자인 → 프롬프트 엔지니어링 → 검수 전 과정) → <strong style="color:var(--teal)">2차 계약 연장 성공</strong></li>
+    <li>예약 프로세스 9단계로 분해 + 단계별 SI 화면·챗봇 연결 아키텍처 역제안 → 정확도 향상 및 고객 이탈 방지</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-ai">Prompt Eng.</span><span class="tag tag-ai">LLM평가</span><span class="tag tag-pm">Sub PM</span><span class="tag tag-pm">Figma</span><span class="tag tag-cert">해외 프로젝트</span></div>
+</div>
+<div class="type-box" id="typeBox">
+  <div class="type-text" id="typeText"></div>
+</div>`;
+
+const S3_HTML=`
+<div class="card" style="border-left-color:#ff6b9d">
+  <div class="c-title">데이터 & AI 역량</div>
+  <div class="c-desc"><ul>
+    <li>ADsP — 데이터분석 준전문가 &nbsp;(한국데이터베이스진흥원, 2024.03)</li>
+    <li>SQLD — SQL 개발자 &nbsp;(한국데이터베이스진흥원, 2024.04 ~ 2026.04)</li>
+    <li>컴퓨터활용능력 1급 &nbsp;(대한상공회의소, 2023.11)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-data">ADsP</span><span class="tag tag-data">SQLD</span><span class="tag tag-cert">컴활 1급</span></div>
+</div>
+<div class="card" style="border-left-color:#4fc3f7">
+  <div class="c-title">디자인 & 생산성 도구</div>
+  <div class="c-desc"><ul>
+    <li>GTQ 그래픽기술자격 1급 &nbsp;(한국생산성본부, 2023.03)</li>
+    <li>MOS MASTER &nbsp;(Microsoft, 2022.06)</li>
+    <li>Google Analytics(GA) 자격 &nbsp;(2023.06)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-dev">GTQ 1급</span><span class="tag tag-cert">MOS Master</span><span class="tag tag-data">GA</span></div>
+</div>
+<div class="card" style="border-left-color:#00d4aa">
+  <div class="c-title">어학</div>
+  <div class="c-desc"><ul>
+    <li>TOEIC 890점 &nbsp;(한국TOEIC위원회, 2025.07)</li>
+    <li>OPIc IH &nbsp;(ACTFL, 2024.02)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-cert">TOEIC 890</span><span class="tag tag-cert">OPIc IH</span></div>
+</div>
+<div class="card" style="border-left-color:#a855f7">
+  <div class="c-title">전문 면허</div>
+  <div class="c-desc"><ul>
+    <li>영양사 면허 &nbsp;(보건복지부, 2020.12)</li>
+    <li>위생사 면허 &nbsp;(보건복지부, 2019.11)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-cert">영양사</span><span class="tag tag-cert">위생사</span></div>
+</div>
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">기타 자격</div>
+  <div class="c-desc"><ul>
+    <li>바리스타 2급 &nbsp;(한국커피문화협회, 2018.06)</li>
+    <li>2종 보통 운전면허 &nbsp;(경찰청, 2020.10)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-kw">바리스타 2급</span><span class="tag tag-kw">운전면허</span></div>
+</div>`;
+
+const S4_HTML=`
+<div class="card" style="border-left-color:#a855f7">
+  <div class="c-title">삼성 드림클래스 수학 멘토</div>
+  <div class="c-sub">저소득층 중학생 수학 학습 지도</div>
+  <div class="c-date">2018.09.04 → 2020.02.29</div>
+  <div class="c-desc"><ul>
+    <li>주 2회(화·목 2h) 수학 지도 · 개인별 보충 교재 직접 제작</li>
+    <li>기초~심화 수준별 커리큘럼 설계, 교과 외 진로 상담·심리적 지지자 역할</li>
+    <li>반 평균 수학 성적 20% 이상 향상</li>
+  </ul></div>
+  <div class="hl">📈 학생 성적 20%↑</div>
+  <div class="tags"><span class="tag tag-pm">멘토링</span><span class="tag tag-pm">교육설계</span></div>
+</div>
+<div class="card" style="border-left-color:#00d4aa">
+  <div class="c-title">한국어 튜터 (외국인 유학생)</div>
+  <div class="c-sub">충남대학교 국제교류</div>
+  <div class="c-date">2019.03 → 2019.06 &nbsp;(60h)</div>
+  <div class="c-desc"><ul>
+    <li>외국인 유학생 한국어 교육 콘텐츠 직접 기획·제작</li>
+    <li>문법·K-POP 활용 수업·발음 교정 등 맞춤 커리큘럼 운영</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">콘텐츠기획</span><span class="tag tag-cert">글로벌소통</span></div>
+</div>
+<div class="card" style="border-left-color:#4fc3f7">
+  <div class="c-title">식품 진로 캠프 멘토</div>
+  <div class="c-sub">청소년 식품산업 진로체험 프로그램</div>
+  <div class="c-date">2018.08</div>
+  <div class="c-desc"><ul>
+    <li>식품외식산업 직업·현장 사례 소개, 탐구 활동 보조</li>
+    <li>기업 관계자와의 대화의 장 마련, 현장체험 및 수행성과 발표대회 운영</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">멘토링</span></div>
+</div>
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">봉사활동</div>
+  <div class="c-desc"><ul>
+    <li>충남대학교 백마봉사단 (2018.03~2018.09, 18h)</li>
+    <li>수정지역아동센터 학습지도 (2014.03~2015.05, 17h)</li>
+    <li>송정요양병원 원내 환경미화·어르신 도우미 (2015.01, 28h)</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-kw">봉사</span><span class="tag tag-kw">63h+</span></div>
+</div>`;
+
+const S5_HTML=`
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">당뇨 환자 AI 식단관리 서비스 기획</div>
+  <div class="c-sub">OO기업 푸드테크 아이디어 공모전 — 본선 진출 (100팀 중 16팀)</div>
+  <div class="c-date">2022.04 → 2022.06</div>
+  <div class="c-desc"><ul>
+    <li>공공데이터 활용 · 개인 맞춤형 AI 식단 알고리즘 설계</li>
+    <li>신체 정보·알레르기·식단가 기반 개별화 알고리즘 + 가중치 기반 콘텐츠 자동 최적화 설계</li>
+    <li>Figma 프로토타입 시각화 · 비즈니스 모델 구축 · 사업 보고서 작성</li>
+    <li>"전 세계 식문화를 이롭게 할 아이디어" 피드백 획득</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-ai">AI기획</span><span class="tag tag-pm">Figma</span><span class="tag tag-data">공공데이터</span><span class="tag tag-cert">본선진출</span></div>
+</div>
+<div class="card" style="border-left-color:#00d4aa">
+  <div class="c-title">시각장애인 구도 추천 카메라 앱</div>
+  <div class="c-sub">POSCO AI·BigData 아카데미 17기 경진대회 — 장려상</div>
+  <div class="c-date">2022.04</div>
+  <div class="c-desc"><ul>
+    <li>YOLOv5 Object Detection 기반 구도 추천 + 음성 안내 카메라 앱</li>
+    <li>후보정·피사체 위치 인지·3분할 구도 음성 안내·물체 인식 기능 구현</li>
+    <li>시각장애인 20명 테스트 → 90%+ 만족도</li>
+    <li>앱 프로토타입 제작 · 정량·정성 분석 수행</li>
+  </ul></div>
+  <div class="hl">🎯 실 사용자 검증 — 만족도 90%+ 달성</div>
+  <div class="tags"><span class="tag tag-ai">YOLOv5</span><span class="tag tag-dev">앱개발</span><span class="tag tag-data">UX리서치</span><span class="tag tag-cert">장려상</span></div>
+</div>
+<div class="card" style="border-left-color:#ff6b9d">
+  <div class="c-title">가족친화 공원 유모차 플랫폼 기획</div>
+  <div class="c-sub">포스코 취업아카데미 경진대회 — 창의상</div>
+  <div class="c-date">2022.11</div>
+  <div class="c-desc"><ul>
+    <li>현장조사·인터뷰·페르소나·쉐도잉·시뮬레이션·친화도분석·앱 프로토타입·고객 테스트</li>
+    <li>유모차 대여 플랫폼 + 유모차 통행 가능 지도 서비스 기획</li>
+    <li>"고객 시점이 잘 반영되었다" 심사 평가</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">UX리서치</span><span class="tag tag-pm">서비스기획</span><span class="tag tag-cert">창의상</span></div>
+</div>
+<div class="card" style="border-left-color:#4fc3f7">
+  <div class="c-title">음식관광 프로그램 기획 — 우수상</div>
+  <div class="c-sub">충남대 Creativity in My Place 경진대회</div>
+  <div class="c-date">2020.11.10</div>
+  <div class="c-desc"><ul>
+    <li>"문학 및 영화 속 요리 페스티벌" 기획안 · 타 행사 분석 · 예산 편성 · 실행 방안 수립</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-pm">기획</span><span class="tag tag-cert">우수상</span></div>
+</div>`;
+
+const S6_HTML=`
+<div class="about-hero">
+  <svg viewBox="0 0 18 22" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 10px;width:52px;height:64px;image-rendering:pixelated">
+    <rect x="4" y="0" width="10" height="2" fill="#3d2b1f"/><rect x="3" y="1" width="12" height="3" fill="#5c3d2e"/>
+    <rect x="2" y="2" width="14" height="2" fill="#3d2b1f"/><rect x="3" y="3" width="12" height="8" fill="#f5c5a3"/>
+    <rect x="4" y="8" width="2" height="1" fill="#ffaaaa"/><rect x="12" y="8" width="2" height="1" fill="#ffaaaa"/>
+    <rect x="5" y="5" width="3" height="3" fill="#2c2c3e"/><rect x="10" y="5" width="3" height="3" fill="#2c2c3e"/>
+    <rect x="5" y="5" width="1" height="1" fill="white"/><rect x="10" y="5" width="1" height="1" fill="white"/>
+    <rect x="7" y="9" width="4" height="1" fill="#e08888"/><rect x="3" y="3" width="3" height="2" fill="#5c3d2e"/>
+    <rect x="12" y="3" width="3" height="2" fill="#5c3d2e"/><rect x="7" y="11" width="4" height="2" fill="#f5c5a3"/>
+    <rect x="4" y="13" width="10" height="6" fill="#4fc3f7"/><rect x="7" y="13" width="4" height="1" fill="#fff"/>
+    <rect x="2" y="13" width="2" height="5" fill="#4fc3f7"/><rect x="14" y="13" width="2" height="5" fill="#4fc3f7"/>
+    <rect x="1" y="17" width="3" height="2" fill="#f5c5a3"/><rect x="14" y="17" width="3" height="2" fill="#f5c5a3"/>
+    <rect x="5" y="19" width="3" height="3" fill="#2a2a50"/><rect x="10" y="19" width="3" height="3" fill="#2a2a50"/>
+    <rect x="4" y="21" width="4" height="1" fill="#f5c842"/><rect x="10" y="21" width="4" height="1" fill="#f5c842"/>
+  </svg>
+  <div class="about-name">이성경 · LEE SEONGKYUNG</div>
+  <div class="about-role">AI FDE 지원자 · AI Transformation Dept.</div>
+  <div class="about-quote">
+    저는 <strong style="color:var(--gold)">"현장의 문제를 AI로 직접 해결하는 사람"</strong>입니다.<br><br>
+    프롬프트 엔지니어로서 LLM을 설계하고, 영업 현장에서 AI 자동화를 직접 구현하며,
+    해외 클라이언트와 협업해 챗봇 프로젝트를 처음부터 끝까지 이끌었습니다.
+    기술을 이해하면서도 현업 담당자의 언어로 문제를 정의하고,
+    빠르게 프로토타입을 만들어 검증하는 것이 저의 가장 큰 강점입니다.
+  </div>
+</div>
+<div class="card" style="border-left-color:#4ade80">
+  <div class="c-title" style="color:var(--green)">왜 크래프톤 AI FDE인가</div>
+  <div class="c-desc" style="margin-top:6px"><ul>
+    <li>저는 지금껏 <strong style="color:var(--white)">파견되어 문제를 찾고 → AI로 해결하고 → 현업에 정착시키는</strong> 일을 반복해왔습니다. AI FDE의 역할이 그것입니다</li>
+    <li>크래프톤은 글로벌 게임 IP를 보유한 데이터 집약 조직 — AI 자동화의 임팩트가 가장 크게 발현될 수 있는 환경입니다</li>
+    <li>AXI(AX Impact)처럼 <strong style="color:var(--white)">성과 중심, 현업 밀착형</strong>으로 AI를 추진하는 팀에서 일하고 싶었습니다</li>
+    <li>Anthropic Claude, OpenAI 등 LLM API를 직접 다뤄본 경험과 PO 관점의 문제 정의 역량을 크래프톤에서 더 크게 쓰고 싶습니다</li>
+  </ul></div>
+  <div class="tags"><span class="tag tag-kw">AI Native</span><span class="tag tag-kw">현업 밀착</span><span class="tag tag-kw">성과 중심</span></div>
+</div>
+<div class="card" style="border-left-color:#f5c842">
+  <div class="c-title">핵심 역량 키워드</div>
+  <div class="kw-grid" style="margin-top:10px">
+    <div class="kw-item">🤖 LLM API<span>Claude · OpenAI</span></div>
+    <div class="kw-item">✍️ Prompt Eng.<span>설계 · 최적화</span></div>
+    <div class="kw-item">🔄 업무 자동화<span>AI 워크플로우</span></div>
+    <div class="kw-item">🎯 PO 관점<span>문제→솔루션</span></div>
+    <div class="kw-item">🌏 글로벌 협업<span>해외 프로젝트</span></div>
+    <div class="kw-item">📊 데이터 분석<span>ADsP · SQLD</span></div>
+    <div class="kw-item">🖥️ UI/UX<span>Figma 설계</span></div>
+    <div class="kw-item">📣 비개발 협업<span>커뮤니케이션</span></div>
+  </div>
+</div>`;
+
+const STAGES=[
+  {id:1,title:'📚 EDUCATION',icon:'🎓',color:'#4fc3f7',lbl:'SCHOOL',html:S1_HTML},
+  {id:2,title:'💼 CAREER',icon:'⚔️',color:'#f5c842',lbl:'BATTLEFIELD',html:S2_HTML,hasBonus:true},
+  {id:3,title:'🏅 CERTIFICATES',icon:'🗝️',color:'#ff6b9d',lbl:'SKILL SHOP',html:S3_HTML},
+  {id:4,title:'🌟 ACTIVITIES',icon:'🗺️',color:'#a855f7',lbl:'SIDE QUEST',html:S4_HTML},
+  {id:5,title:'🏆 PROJECTS & AWARDS',icon:'⭐',color:'#f5c842',lbl:'BOSS STAGE',html:S5_HTML},
+  {id:6,title:'👤 ABOUT ME',icon:'💬',color:'#4ade80',lbl:'FINAL GATE',html:S6_HTML}
+];
+
+// ── state ──
+let gState='title', stageIdx=0;
+let charX=55, targetX=55;
+let walkFrame=0, walkTimer=0;
+let castleReached=false;
+let popupShown=false, aiPanelShown=false;
+
+const CP=[0.13,0.27,0.42,0.56,0.71,0.86,0.97];
+function wX(t){return 50+t*(cv.width-120);}
+
+// ── typewriter ──
+let typeTimer=null;
+function startTypewriter(){
+  const msg='AI로 다니는 회사마다 개혁했군! 이제 KRAFTON의 차례인가 🏰';
+  const el=document.getElementById('typeText');
+  if(!el)return;
+  el.textContent='';
+  let i=0;
+  clearInterval(typeTimer);
+  typeTimer=setInterval(()=>{
+    if(i<msg.length){el.textContent+=msg[i++];}
+    else clearInterval(typeTimer);
+  },55);
+}
+
+// ── draw ──
+function drawFrame(){
+  const W=cv.width,H=cv.height,GY=H*.70,SC=Math.min(W,H)/480;
+  const sg=ctx.createLinearGradient(0,0,0,GY);
+  sg.addColorStop(0,'#03030c');sg.addColorStop(.6,'#0c0c20');sg.addColorStop(1,'#141430');
+  ctx.fillStyle=sg;ctx.fillRect(0,0,W,GY);
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  for(let i=0;i<30;i++)ctx.fillRect(Math.floor((i*131+50)%W),Math.floor((i*79+30)%(GY*.9)),2,2);
+  const mx=W*.88,my=GY*.15,mr=17*SC;
+  ctx.fillStyle='#ffffcc';ctx.beginPath();ctx.arc(mx,my,mr,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#0c0c20';ctx.beginPath();ctx.arc(mx-mr*.22,my-mr*.08,mr*.84,0,Math.PI*2);ctx.fill();
+  const gg=ctx.createLinearGradient(0,GY,0,H);
+  gg.addColorStop(0,'#143214');gg.addColorStop(.15,'#0e200e');gg.addColorStop(1,'#060c06');
+  ctx.fillStyle=gg;ctx.fillRect(0,GY,W,H-GY);
+  ctx.fillStyle='#232312';ctx.fillRect(0,GY+8,W,20);
+  ctx.fillStyle='#303020';ctx.fillRect(0,GY+10,W,8);
+  ctx.fillStyle='rgba(245,200,66,.16)';
+  for(let i=0;i<W;i+=38)ctx.fillRect(i,GY+13,18,3);
+  [0.04,0.20,0.36,0.50,0.64,0.78].forEach(t=>{
+    const tx=wX(t),ty=GY,ts=SC*8;
+    ctx.fillStyle='#3e2518';ctx.fillRect(tx-ts,ty-ts*4,ts*2,ts*4);
+    ctx.fillStyle='#143014';ctx.fillRect(tx-ts*3,ty-ts*7.5,ts*6,ts*4);
+    ctx.fillStyle='#183c18';ctx.fillRect(tx-ts*2,ty-ts*9.5,ts*4,ts*3);
+    ctx.fillStyle='#1c481c';ctx.fillRect(tx-ts,ty-ts*11,ts*2,ts*2);
+  });
+  STAGES.forEach((st,i)=>{
+    const tx=wX(CP[i]),ty=GY,passed=(i<stageIdx||castleReached),cur=(i===stageIdx&&!castleReached),fs=SC*7;
+    ctx.fillStyle=passed?'#555':'#bbb';ctx.fillRect(tx-1,ty-fs*5,2,fs*5);
+    ctx.fillStyle=passed?'#333':(cur?'#f5c842':st.color);ctx.fillRect(tx,ty-fs*5,fs*3,fs*2);
+    ctx.font=`bold ${Math.max(7,7.5*SC)}px 'Press Start 2P',monospace`;
+    ctx.textAlign='center';
+    ctx.fillStyle=passed?'#444':(cur?'#f5c842':'#eee');
+    ctx.fillText(`S${st.id}`,tx,ty-fs*5.8);
+    if(cur){
+      const b=Math.sin(Date.now()/280)*4;
+      ctx.fillStyle='#f5c842';ctx.font=`${Math.max(10,12*SC)}px sans-serif`;
+      ctx.fillText('▼',tx,ty-fs*6.5-b);
+    }
+  });
+  // castle
+  const cx2=wX(1.0),cy2=GY,cs=SC*9;
+  ctx.fillStyle='#1e1e38';ctx.fillRect(cx2-cs*6,cy2-cs*8,cs*12,cs*8);
+  for(let b=0;b<5;b++){ctx.fillStyle=b%2===0?'#2a2a4a':'#1e1e38';ctx.fillRect(cx2-cs*6+b*cs*2.4,cy2-cs*10,cs*2,cs*2);}
+  ctx.fillStyle='#2a2a4a';ctx.fillRect(cx2-cs*8,cy2-cs*11,cs*3,cs*11);ctx.fillRect(cx2+cs*5,cy2-cs*11,cs*3,cs*11);
+  ctx.fillStyle='#f5c842';ctx.fillRect(cx2-cs*8,cy2-cs*12,cs*3,cs);ctx.fillRect(cx2+cs*5,cy2-cs*12,cs*3,cs);
+  ctx.fillStyle='#080808';ctx.fillRect(cx2-cs*2,cy2-cs*4,cs*4,cs*4);
+  ctx.fillStyle='rgba(245,200,66,.45)';ctx.fillRect(cx2-cs*4,cy2-cs*6,cs,cs*1.5);ctx.fillRect(cx2+cs*3,cy2-cs*6,cs,cs*1.5);
+  ctx.fillStyle='#aaa';ctx.fillRect(cx2-1,cy2-cs*14,2,cs*3);
+  ctx.fillStyle='#f5c842';ctx.fillRect(cx2,cy2-cs*14,cs*2,cs);
+  if(castleReached){ctx.fillStyle='rgba(245,200,66,.06)';ctx.beginPath();ctx.arc(cx2,cy2-cs*6,cs*10,0,Math.PI*2);ctx.fill();}
+  // char
+  const p=Math.max(2,Math.floor(SC*2.8)),bY=GY,hY=bY-p*14,lO=walkFrame%2===0?1:-1;
+  ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(charX-p*3,bY+1,p*6,p);
+  ctx.fillStyle='#2a2a50';ctx.fillRect(charX-p*2,hY+p*10,p*2,p*3+lO*p);ctx.fillRect(charX,hY+p*10,p*2,p*3-lO*p);
+  ctx.fillStyle='#f5c842';ctx.fillRect(charX-p*2-p*lO,hY+p*13+lO*p,p*3,p);ctx.fillRect(charX+p*lO,hY+p*13-lO*p,p*3,p);
+  ctx.fillStyle='#4fc3f7';ctx.fillRect(charX-p*3,hY+p*5,p*6,p*5);
+  ctx.fillStyle='#fff';ctx.fillRect(charX-p,hY+p*5,p*2,p);
+  ctx.fillStyle='#4fc3f7';ctx.fillRect(charX-p*5,hY+p*5+lO*p,p*2,p*4);ctx.fillRect(charX+p*3,hY+p*5-lO*p,p*2,p*4);
+  ctx.fillStyle='#f5c5a3';ctx.fillRect(charX-p*5-p,hY+p*8+lO*p,p*2,p*2);ctx.fillRect(charX+p*3+p,hY+p*8-lO*p,p*2,p*2);
+  ctx.fillStyle='#f5c5a3';ctx.fillRect(charX-p,hY+p*4,p*2,p*2);ctx.fillRect(charX-p*4,hY,p*8,p*5);
+  ctx.fillStyle='#ffaaaa';ctx.fillRect(charX-p*4,hY+p*3,p*2,p);ctx.fillRect(charX+p*2,hY+p*3,p*2,p);
+  ctx.fillStyle='#2c2c3e';ctx.fillRect(charX-p*3,hY+p,p*2,p*2);ctx.fillRect(charX+p,hY+p,p*2,p*2);
+  ctx.fillStyle='#fff';ctx.fillRect(charX-p*3,hY+p,p,p);ctx.fillRect(charX+p,hY+p,p,p);
+  ctx.fillStyle='#e08888';ctx.fillRect(charX-p,hY+p*3,p*2,p);ctx.fillRect(charX-p*2,hY+p*4,p,p);ctx.fillRect(charX+p,hY+p*4,p,p);
+  ctx.fillStyle='#3d2b1f';ctx.fillRect(charX-p*4,hY-p,p*8,p*2);ctx.fillRect(charX-p*5,hY,p,p*3);
+  ctx.fillStyle='#5c3d2e';ctx.fillRect(charX-p*4,hY,p*2,p*2);ctx.fillRect(charX+p*2,hY,p*2,p*2);
+  // HUD
+  ctx.textAlign='left';
+  ctx.font=`${Math.max(7,7*SC)}px 'Press Start 2P',monospace`;
+  ctx.fillStyle='#f5c842';ctx.fillText(`STAGE ${Math.min(stageIdx+1,STAGES.length)} / ${STAGES.length}`,14,22);
+  ctx.font=`${Math.max(9,9.5*SC)}px 'Noto Sans KR',sans-serif`;
+  ctx.fillStyle='#555';ctx.fillText('이성경  ·  AI FDE 이력서  ×  KRAFTON',14,40);
+  if(gState==='walking'&&charX>=targetX-2){
+    const hint=castleReached?'🏰  ENTER / CLICK: 최종 화면':`▶  ENTER / CLICK: ${STAGES[stageIdx]?.lbl||''} 확인`;
+    ctx.font=`${Math.max(7,7.5*SC)}px 'Press Start 2P',monospace`;
+    ctx.textAlign='center';
+    ctx.fillStyle=Math.sin(Date.now()/400)>0?'#f5c842':'#e8a020';
+    ctx.fillText(hint,W/2,H*.91);
+  }
+}
+
+function loop(){
+  requestAnimationFrame(loop);
+  cv.width=innerWidth;cv.height=innerHeight;
+  if(charX<targetX-2){
+    charX+=Math.min(3,(targetX-charX)*.045);
+    walkTimer+=16;if(walkTimer>165){walkFrame++;walkTimer=0;}
+  }
+  drawFrame();
+}
+
+function showPanel(i){
+  gState='panel';
+  const s=STAGES[i];
+  document.getElementById('pIcon').textContent=s.icon;
+  document.getElementById('pTitle').textContent=s.title;
+  document.getElementById('pNum').textContent=`${i+1} / ${STAGES.length}`;
+  document.getElementById('pBody').innerHTML=s.html;
+  document.getElementById('panelWrap').scrollTop=0;
+  document.getElementById('infoPanel').classList.remove('hidden');
+}
+function hidePanel(){document.getElementById('infoPanel').classList.add('hidden');}
+
+function showPopup(){
+  gState='popup';
+  document.getElementById('popup').classList.remove('hidden');
+}
+function hidePopup(){document.getElementById('popup').classList.add('hidden');}
+
+function showAiPanel(){
+  gState='aipanel';
+  document.getElementById('aiBody').innerHTML=AI_BONUS_HTML;
+  document.getElementById('aiPanelWrap').scrollTop=0;
+  document.getElementById('aiPanel').classList.remove('hidden');
+  setTimeout(startTypewriter,400);
+}
+function hideAiPanel(){
+  document.getElementById('aiPanel').classList.add('hidden');
+  clearInterval(typeTimer);
+}
+
+function advance(){
+  stageIdx++;
+  if(stageIdx>=STAGES.length){targetX=wX(1.0)-80;castleReached=true;}
+  else{targetX=wX(CP[stageIdx]);}
+  gState='walking';
+  document.getElementById('prog').style.width=(stageIdx/STAGES.length*100)+'%';
+  popupShown=false;aiPanelShown=false;
+}
+
+function action(){
+  if(gState==='title'){
+    document.getElementById('titleScreen').classList.add('hidden');
+    gState='walking';charX=50;targetX=wX(CP[0]);
+    loop();return;
+  }
+  if(gState==='walking'&&charX>=targetX-2){
+    if(castleReached){
+      gState='end';
+      document.getElementById('endScreen').classList.remove('hidden');
+      document.getElementById('prog').style.width='100%';
+    } else {
+      showPanel(stageIdx);
+    }
+    return;
+  }
+  if(gState==='panel'){
+    hidePanel();
+    // S2 (index 1) triggers bonus popup
+    if(stageIdx===1&&!popupShown){
+      popupShown=true;
+      showPopup();
+    } else {
+      advance();
+    }
+    return;
+  }
+  if(gState==='popup'){
+    hidePopup();
+    showAiPanel();
+    return;
+  }
+  if(gState==='aipanel'){
+    hideAiPanel();
+    advance();
+    return;
+  }
+}
+
+// popup btn
+document.getElementById('popupBtn').addEventListener('click',e=>{e.stopPropagation();action();});
+
+document.addEventListener('keydown',e=>{if(e.code==='Enter'||e.code==='Space'){e.preventDefault();action();}});
+document.addEventListener('click',()=>action());
+document.addEventListener('touchend',e=>{e.preventDefault();action();},{passive:false});
+</script>
+</body>
+</html>
